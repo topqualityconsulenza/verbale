@@ -1,0 +1,51 @@
+<%- include('partials/header', { pageTitle: 'Nuovo Verbale di Consegna' }) %>
+<h2>Nuovo Verbale di Consegna</h2>
+<form action="/create" method="POST" enctype="multipart/form-data" class="row g-3">
+  <div class="col-md-12">
+    <label class="form-label">Ragione Sociale</label>
+    <input type="text" name="ragione" class="form-control" required>
+  </div>
+
+  <div class="col-md-12">
+    <p>Il summenzionato cliente, in persona del rappresentante legale o di un suo delegato, dichiara di aver ricevuto in data odierna, dalla società di consulenza Top Quality S.R.L., la seguente documentazione:</p>
+  </div>
+
+  <% const documenti = [
+    'DVR', 'Manuale Haccp', 'Implementazione Haccp', 'Attestato Haccp', 'Attestato RSPP', 'Attestato RLS',
+    'Attestato Primo Soccorso', 'Attestato Antincendio', 'Attestato Formazione', 'Giudizio Sanitario',
+    'Report Analisi (Tamponi/ Acqua)', 'GDPR (Modello organizzativo)'
+  ]; %>
+
+  <% documenti.forEach((doc, index) => { %>
+    <div class="col-md-6">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="checkboxes" value="<%= doc %>" id="doc<%= index %>">
+        <label class="form-check-label" for="doc<%= index %>"><%= doc %></label>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <input type="text" class="form-control" name="details_<%= index %>" placeholder="Dettagli su <%= doc %>">
+    </div>
+  <% }); %>
+
+  <div class="col-md-12">
+    <label class="form-label">Altro</label>
+    <input type="text" name="altro" class="form-control">
+  </div>
+
+  <div class="col-md-12">
+    <p>Il cliente, dopo aver preso visione della documentazione consegnatagli, ne conferma la corrispondenza a quanto richiesto Top Quality, in sede di conferimento dell'incarico, per ottemperare agli obblighi di legge a cui è tenuto.</p>
+  </div>
+
+  <div class="col-md-12">
+    <label class="form-label">Allegati</label>
+    <input type="file" name="allegati" multiple class="form-control">
+  </div>
+
+
+  <div class="col-12">
+    <button type="submit" class="btn btn-danger">Salva Verbale</button>
+  </div>
+</form>
+
+<%- include('partials/footer') %>

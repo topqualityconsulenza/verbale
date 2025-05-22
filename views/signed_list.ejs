@@ -1,0 +1,30 @@
+<%- include('partials/header', { pageTitle: 'Documenti firmati' }) %>
+<h2>Documenti firmati</h2>
+<input type="text" id="searchInput" class="form-control mb-3" placeholder="Cerca per nome file...">
+<button onclick="window.location='/download-all'" class="btn btn-success mb-3">Scarica tutti in ZIP</button>
+<ul id="fileList" class="list-group">
+  <% files.forEach(f => { %>
+    <li class="list-group-item d-flex justify-content-between align-items-center" data-name="<%= f.toLowerCase() %>">
+      <div><%= f %></div>
+      <div>
+        <a href="/download-signed/<%= f %>" class="btn btn-sm btn-outline-primary">Scarica</a>
+        <a href="#" onclick="confirmDelete('<%= f %>')" class="btn btn-sm btn-outline-danger">Elimina</a>
+      </div>
+    </li>
+  <% }) %>
+</ul>
+<script>
+  function confirmDelete(filename) {
+    if (confirm(`Sei sicuro di voler eliminare il file "${filename}"?`)) {
+      window.location.href = '/delete-signed/' + encodeURIComponent(filename);
+    }
+  }
+  const input = document.getElementById('searchInput');
+  input.addEventListener('input', () => {
+    const filter = input.value.toLowerCase();
+    document.querySelectorAll('#fileList li').forEach(li => {
+      li.style.display = li.dataset.name.includes(filter) ? '' : 'none';
+    });
+  });
+</script>
+<%- include('partials/footer') %>

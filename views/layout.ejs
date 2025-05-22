@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/style.css">
+  <title><%= title || 'Delivery App' %></title>
+</head>
+<body>
+  <header>
+    <!-- Inserisci qui il tuo logo -->
+    <img src="/css/logo.png" alt="Logo" style="height:50px; vertical-align: middle;">
+    <nav>
+      <a href="/">Nuovo verbale</a>
+      <a href="/list">Verbali salvati</a>
+      <a href="/sign">Firma documento</a>
+      <a href="/signed_list">Documenti firmati</a>
+    </nav>
+  </header>
+  <div class="container">
+    <%= body %>
+  </div>
+</body>
+</html>

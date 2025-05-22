@@ -1,0 +1,56 @@
+<%- include('partials/header', { pageTitle: 'Firma Documenti' }) %>
+<h2>Firma PDF</h2>
+<form action="/sign" method="POST" enctype="multipart/form-data" class="row g-3">
+  <div class="col-md-12">
+    <label class="form-label">Carica PDF da firmare</label>
+    <input type="file" name="pdf" accept="application/pdf" class="form-control" required>
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label">Nome</label>
+    <input type="text" name="nome_firma" class="form-control" required>
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label">Cognome</label>
+    <input type="text" name="cognome_firma" class="form-control" required>
+  </div>
+
+  <div class="col-md-12">
+    <label class="form-label">Firma (touch)</label>
+    <canvas id="firmaCanvas" style="border:1px solid #000; width: 100%; height: 200px;"></canvas>
+    <input type="hidden" name="firma" id="firmaInput">
+    <button type="button" class="btn btn-danger mt-2" onclick="firmaCanvas.getContext('2d').clearRect(0, 0, firmaCanvas.width, firmaCanvas.height)">Cancella Firma</button>
+  </div>
+
+  <div class="col-12">
+    <button type="submit" class="btn btn-success">Carica e Firma</button>
+  </div>
+</form>
+
+<script>
+  const firmaCanvas = document.getElementById('firmaCanvas');
+  const firmaInput = document.getElementById('firmaInput');
+  const ctx = firmaCanvas.getContext('2d');
+  let isDrawing = false;
+
+  firmaCanvas.addEventListener('mousedown', () => isDrawing = true);
+  firmaCanvas.addEventListener('mouseup', () => {
+    isDrawing = false;
+    firmaInput.value = firmaCanvas.toDataURL();
+  });
+  firmaCanvas.addEventListener('mousemove', e => {
+    if (!isDrawing) return;
+    const rect = firmaCanvas.getBoundingClientRect();
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#000';
+    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+  });
+</script>
+
+<%- include('partials/footer') %>
+

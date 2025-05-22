@@ -1,0 +1,98 @@
+<%- include('partials/header', { pageTitle: 'Modifica Verbale di Consegna' }) %>
+<h2>Modifica Verbale di Consegna</h2>
+
+<form action="/edit/<%= record.id %>" method="POST" enctype="multipart/form-data" class="row g-3">
+
+  <!-- Ragione Sociale -->
+  <div class="col-md-12">
+    <label class="form-label">Ragione Sociale</label>
+    <input 
+      type="text" 
+      name="ragione" 
+      class="form-control" 
+      required 
+      value="<%= record.ragione %>">
+  </div>
+
+  <!-- Paragrafo introduttivo -->
+  <div class="col-md-12">
+    <p>Il summenzionato cliente, in persona del rappresentante legale o di un suo delegato, dichiara di aver ricevuto in data odierna, dalla società di consulenza Top Quality S.R.L., la seguente documentazione:</p>
+  </div>
+
+  <!-- Checkbox + dettagli -->
+  <% const documenti = [
+    'DVR','Manuale Haccp','Implementazione Haccp','Attestato Haccp',
+    'Attestato RSPP','Attestato RLS','Attestato Primo Soccorso',
+    'Attestato Antincendio','Attestato Formazione','Giudizio Sanitario',
+    'Report Analisi (Tamponi/ Acqua)','GDPR (Modello organizzativo)'
+  ]; %>
+
+  <% documenti.forEach((doc, idx) => {
+       // trova se selezionato
+       const found = (record.selectedDocs||[]).find(d => d.nome === doc) || {};
+       const isChecked = Boolean(found.nome);
+       const dettaglio = found.dettaglio || '';
+  %>
+    <div class="col-md-6">
+      <div class="form-check">
+        <input 
+          class="form-check-input" 
+          type="checkbox" 
+          name="checkboxes" 
+          value="<%= doc %>" 
+          id="doc<%= idx %>"
+          <%= isChecked ? 'checked' : '' %>>
+        <label class="form-check-label" for="doc<%= idx %>"><%= doc %></label>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <input 
+        type="text" 
+        class="form-control" 
+        name="details_<%= idx %>" 
+        placeholder="Dettagli su <%= doc %>" 
+        value="<%= dettaglio %>">
+    </div>
+  <% }) %>
+
+  <!-- Altro -->
+  <div class="col-md-12">
+    <label class="form-label">Altro</label>
+    <input 
+      type="text" 
+      name="altro" 
+      class="form-control" 
+      value="<%= record.altro %>">
+  </div>
+
+  <!-- Conferma paragrafo -->
+  <div class="col-md-12">
+    <p>Il cliente, dopo aver preso visione della documentazione consegnatagli, ne conferma la corrispondenza a quanto richiesto Top Quality, in sede di conferimento dell'incarico, per ottemperare agli obblighi di legge a cui è tenuto.</p>
+  </div>
+
+  <!-- Allegati esistenti + upload nuovi -->
+  <div class="col-md-12">
+    <label class="form-label">Allegati esistenti</label>
+    <ul>
+      <% (record.allegati||[]).forEach(file => { %>
+        <li>
+          <a href="/uploads/<%= file %>" target="_blank"><%= file %></a>
+        </li>
+      <% }) %>
+    </ul>
+  </div>
+  <div class="col-md-12">
+    <label class="form-label">Aggiungi altri allegati</label>
+    <input type="file" name="allegati" multiple class="form-control">
+  </div>
+
+  
+  <!-- Submit -->
+  <div class="col-12">
+    <button type="submit" class="btn btn-primary">Aggiorna Verbale</button>
+  </div>
+</form>
+
+<%- include('partials/footer') %>
+
+

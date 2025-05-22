@@ -1,0 +1,43 @@
+/* Definizione variabili colore primarie */
+:root {
+--primary-color: #a01f24;
+--secondary-color: #ffc211;
+--background-color: #fafafa;
+--text-color: #333333;
+}
+body {
+font-family: Arial, sans-serif;
+background-color: var(--background-color);
+color: var(--text-color);
+margin: 0;
+padding: 0;
+}
+/* Header e Navbar */
+header, .navbar, footer {
+color: #fff;
+}
+.navbar .nav-link, header nav a {
+color: var(--background-color) !important;
+}
+.navbar .nav-link:hover, header nav a:hover {
+color: #fafafabd !important;
+}
+/* Contenitore principale */
+.container, main.container {
+max-width: 800px;
+margin: 2rem auto;
+background: #fff;
+padding: 2rem;
+box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Footer sempre in basso */
+footer {
+color: #fff;
+position: fixed;
+bottom: 0;
+width: 100%;
+padding-top: 10px;
+text-align: center;
+z-index: 1000;
+}

@@ -1,0 +1,25 @@
+<%- include('partials/header', { pageTitle: 'Verbali salvati' }) %>
+<h2>Verbali salvati</h2>
+<input type="text" id="searchInput" class="form-control mb-3" placeholder="Cerca per ragione sociale...">
+<ul id="recordList" class="list-group">
+  <% records.forEach(rec => { %>
+    <li class="list-group-item d-flex justify-content-between align-items-center" data-name="<%= rec.ragione.toLowerCase() %>">
+      <div>
+        <strong><%= rec.ragione %></strong> - <%= rec.date %><br>
+        <a href="/download/<%= rec.id %>" class="btn btn-sm btn-outline-success">Scarica PDF</a>
+        <a href="/edit/<%= rec.id %>" class="btn btn-sm btn-outline-warning">Modifica</a>
+        <a href="/delete/<%= rec.id %>" class="btn btn-sm btn-outline-danger">Elimina</a>
+      </div>
+    </li>
+  <% }) %>
+</ul>
+<script>
+  const input = document.getElementById('searchInput');
+  input.addEventListener('input', () => {
+    const filter = input.value.toLowerCase();
+    document.querySelectorAll('#recordList li').forEach(li => {
+      li.style.display = li.dataset.name.includes(filter) ? '' : 'none';
+    });
+  });
+</script>
+<%- include('partials/footer') %>

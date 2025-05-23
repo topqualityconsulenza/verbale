@@ -177,10 +177,32 @@ app.get('/delete/:id', (req, res) => {
 
 app.get('/download/:id', (req, res) => {
   const record = loadRecords().find(r => r.id === req.params.id);
-  if (!record) return res.send('Verbale non trovato');
-  const filename = `${record.id}-${record.ragione.replace(/[^a-z0-9]/gi, '_')}.pdf`;
-  const filepath = path.join(signedDir, filename);
-  res.download(filepath);
+  if (!record) return res.status(404).send('Verbale non trovato');
+
+  // Nome del file ZIP
+  const zipName = `${record.ragione.replace(/[^a-z0-9]/gi, '_')}_${record.id}.zip`;
+  res.setHeader('Content-Type', 'application/zip');
+  res.setHeader('Content-Disposition', `attachment; filename="${zipName}"`);
+
+  const archive = archiver('zip', { zlib: { level: 9 } });
+  archive.on('error', err => res.status(500).send({ error: err.message }));
+  archive.pipe(res);
+
+  // 1) Aggiungi il PDF generato del verbale
+  const pdfPath = path.join(signedDir, `${record.id}-${record.ragione.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+  if (fs.existsSync(pdfPath)) {
+    archive.file(pdfPath, { name: `${record.ragione}.pdf` });
+  }
+
+  // 2) Aggiungi tutti gli allegati
+  record.allegati.forEach(file => {
+    const filePath = path.join(uploadsDir, file);
+    if (fs.existsSync(filePath)) {
+      archive.file(filePath, { name: file });
+    }
+  });
+
+  archive.finalize();
 });
 
 // --- FIRMA PDF ---

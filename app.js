@@ -32,7 +32,7 @@ app.get('/', (req, res) => res.redirect('/create'));
 
 app.get('/create', (req, res) => res.render('create'));
 
-app.post('/create', upload.array('allegati'), (req, res) => {
+app.post('/create', upload.array('allegati[]', 10), (req, res) => {
   const { ragione, nome_firma, cognome_firma, altro } = req.body;
   const checkboxes = req.body.checkboxes || [];
   const allegati = req.files.map(f => f.filename);

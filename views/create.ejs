@@ -38,14 +38,53 @@
   </div>
 
   <div class="col-md-12">
-    <label class="form-label">Allegati</label>
-    <input type="file" name="allegati" multiple class="form-control">
+    <label class="form-label">Allegati (trascina qui i file oppure clicca)</label>
+    <div id="dropZone" class="border border-dark rounded p-4 text-center" style="min-height: 150px; background-color: #f8f9fa; cursor: pointer;">
+      Trascina i file qui oppure clicca per selezionarli
+      <input type="file" id="fileInput" name="allegati[]" multiple hidden>
+      <ul id="fileList" class="list-unstyled mt-3"></ul>
+    </div>
   </div>
-
 
   <div class="col-12">
     <button type="submit" class="btn btn-danger">Salva Verbale</button>
   </div>
 </form>
 
+<script>
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const fileList = document.getElementById('fileList');
+
+  dropZone.addEventListener('click', () => fileInput.click());
+
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('bg-light');
+  });
+
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('bg-light');
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('bg-light');
+    fileInput.files = e.dataTransfer.files;
+    updateFileList();
+  });
+
+  fileInput.addEventListener('change', updateFileList);
+
+  function updateFileList() {
+    fileList.innerHTML = '';
+    for (let i = 0; i < fileInput.files.length; i++) {
+      const li = document.createElement('li');
+      li.textContent = fileInput.files[i].name;
+      fileList.appendChild(li);
+    }
+  }
+</script>
+
 <%- include('partials/footer') %>
+

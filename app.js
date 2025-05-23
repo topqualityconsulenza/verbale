@@ -292,5 +292,10 @@ app.get('/download-all', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server avviato su http://localhost:${PORT}`));
+// Imposta il binding all'host 0.0.0.0 richiesto da Render
+const server = app.listen(PORT, '0.0.0.0', () => console.log(`Server avviato su http://localhost:${PORT}`));
+
+// Aumenta i timeout per evitare errori di gateway su Render
+server.keepAliveTimeout = 120000;  // 120 secondi
+server.headersTimeout = 120000;    // 120 secondi
 

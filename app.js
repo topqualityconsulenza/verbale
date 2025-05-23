@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const multer = require('multer');
 const fs = require('fs-extra');
 const path = require('path');
-const PDFDocument = require('pdfkit');
+const { PDFDocument, rgb } = require('pdf-lib');
 const moment = require('moment');
 const archiver = require('archiver');
 
@@ -198,7 +198,7 @@ app.get('/download/:id', (req, res) => {
   record.allegati.forEach(file => {
     const filePath = path.join(uploadsDir, file);
     if (fs.existsSync(filePath)) {
-      archive.file(filePath, { name: file });
+      archive.file(filePath, { name: `${ file }.pdf`});
     }
   });
 
@@ -208,12 +208,59 @@ app.get('/download/:id', (req, res) => {
 // --- FIRMA PDF ---
 app.get('/sign', (req, res) => res.render('sign'));
 
-app.post('/sign', upload.single('pdf'), (req, res) => {
-  const { originalname, path: tmpPath } = req.file;
-  const filename = `${Date.now()}-${originalname}`;
-  const dest = path.join(signedDir, filename);
-  fs.moveSync(tmpPath, dest);
-  res.redirect('/signed_list');
+app.post('/sign', upload.single('pdf'), async (req, res) => {
+  try {
+    const nome = req.body.nome_firma;
+    const cognome = req.body.cognome_firma;
+    const signatureData = req.body.firma;
+    const date = new Date().toLocaleDateString('it-IT');
+    const tmpPath = req.file.path;
+
+    const existingPdfBytes = fs.readFileSync(tmpPath);
+    const pdfDoc = await PDFDocument.load(existingPdfBytes);
+
+    // embed firma PNG
+    const pngBytes = Buffer.from(signatureData.split(',')[1], 'base64');
+    const pngImage = await pdfDoc.embedPng(pngBytes);
+    const pngDims = pngImage.scale(0.5);
+
+    const pages = pdfDoc.getPages();
+    const lastPage = pages[pages.length - 1];
+    const { width, height } = lastPage.getSize();
+
+    // disegna firma
+    lastPage.drawImage(pngImage, {
+      x: width - pngDims.width - 50,
+      y: 50,
+      width: pngDims.width,
+      height: pngDims.height,
+    });
+    // disegna nome cognome
+    lastPage.drawText(`${nome} ${cognome}`, {
+      x: width - pngDims.width - 50,
+      y: 40 + pngDims.height,
+      size: 12,
+      color: rgb(0,0,0)
+    });
+    // disegna data
+    lastPage.drawText(date, {
+      x: 50,
+      y: 40,
+      size: 12,
+      color: rgb(0,0,0)
+    });
+
+    const signedPdfBytes = await pdfDoc.save();
+    const filename = `${Date.now()}-${req.file.originalname}`;
+    const destPath = path.join(signedDir, filename);
+    fs.writeFileSync(destPath, signedPdfBytes);
+    fs.unlinkSync(tmpPath);
+
+    res.redirect('/signed_list');
+  } catch (err) {
+    console.error('Errore durante la firma del PDF:', err);
+    res.status(500).send('Errore nella firma del documento');
+  }
 });
 
 app.get('/signed_list', (req, res) => {

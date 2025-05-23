@@ -3,7 +3,8 @@ const bodyParser = require('body-parser');
 const multer = require('multer');
 const fs = require('fs-extra');
 const path = require('path');
-const { PDFDocument, rgb } = require('pdf-lib');
+const PDFKitDocument = require('pdfkit');            // <— rinominato
+const { PDFDocument, rgb } = require('pdf-lib')  
 const moment = require('moment');
 const archiver = require('archiver');
 
@@ -27,7 +28,7 @@ function saveRecords(records) {
   fs.writeJsonSync(dataFile, records, { spaces: 2 });
 }
 
-app.get('/', (req, res) => res.redirect('/list'));
+app.get('/', (req, res) => res.redirect('/create'));
 
 app.get('/create', (req, res) => res.render('create'));
 
@@ -63,8 +64,6 @@ app.post('/create', upload.array('allegati'), (req, res) => {
   records.push({
     id,
     ragione,
-    nome_firma,
-    cognome_firma,
     altro,
     allegati,
     selectedDocs,
@@ -74,29 +73,28 @@ app.post('/create', upload.array('allegati'), (req, res) => {
 
   // Crea PDF
   const pdfPath = path.join(signedDir, `${id}-${ragione.replace(/[^a-z0-9]/gi, '_')}.pdf`);
-  const doc = new PDFDocument();
-  doc.pipe(fs.createWriteStream(pdfPath));
+  const docPdf = new PDFKitDocument();        // usa pdfkit
+  docPdf.pipe(fs.createWriteStream(pdfPath));
 
-  doc.fontSize(18).text('Verbale di Consegna Documentazione', { align: 'center' });
-  doc.moveDown();
-  doc.fontSize(12);
-  doc.text(`Ragione Sociale: ${ragione}`);
-  doc.text(`Nome: ${nome_firma} ${cognome_firma}`);
-  doc.text(`Data: ${date}`);
-  doc.moveDown();
+  docPdf.fontSize(18).text('Verbale di Consegna Documentazione', { align: 'center' });
+  docPdf.moveDown();
+  docPdf.fontSize(12);
+  docPdf.text(`Ragione Sociale: ${ragione}`);
+  docPdf.text(`Data: ${date}`);
+  docPdf.moveDown();
 
-  doc.text('Documentazione consegnata:');
+  docPdf.text('Documentazione consegnata:');
   selectedDocs.forEach(item => {
     const linea = `- ${item.nome}${item.dettaglio ? `: ${item.dettaglio}` : ''}`;
-    doc.text(linea, { indent: 20 });
+    docPdf.text(linea, { indent: 20 });
   });
 
   if (altro && altro.trim() !== '') {
-    doc.moveDown();
-    doc.text(`Altro: ${altro}`, { indent: 20 });
+    docPdf.moveDown();
+    docPdf.text(`Altro: ${altro}`, { indent: 20 });
   }
 
-  doc.end();
+  docPdf.end();
 
   res.redirect('/list');
 });

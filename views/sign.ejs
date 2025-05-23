@@ -1,6 +1,6 @@
 <%- include('partials/header', { pageTitle: 'Firma Documenti' }) %>
 <h2>Firma PDF</h2>
-<form action="/sign" method="POST" enctype="multipart/form-data" class="row g-3">
+<form id="signForm" action="/sign" method="POST" enctype="multipart/form-data" class="row g-3">
   <div class="col-md-12">
     <label class="form-label">Carica PDF da firmare</label>
     <input type="file" name="pdf" accept="application/pdf" class="form-control" required>
@@ -17,10 +17,10 @@
   </div>
 
   <div class="col-md-12">
-    <label class="form-label">Firma (touch)</label>
-    <canvas id="firmaCanvas" style="border:1px solid #000; width: 100%; height: 200px;"></canvas>
+    <label class="form-label">Firma (touch/mouse)</label>
+    <canvas id="firmaCanvas" width="600" height="200" class="w-100 border"></canvas>
     <input type="hidden" name="firma" id="firmaInput">
-    <button type="button" class="btn btn-danger mt-2" onclick="firmaCanvas.getContext('2d').clearRect(0, 0, firmaCanvas.width, firmaCanvas.height)">Cancella Firma</button>
+    <button type="button" class="btn btn-danger mt-2" onclick="clearCanvas()">Cancella Firma</button>
   </div>
 
   <div class="col-12">
@@ -34,23 +34,55 @@
   const ctx = firmaCanvas.getContext('2d');
   let isDrawing = false;
 
+  // Gestione input mouse
   firmaCanvas.addEventListener('mousedown', () => isDrawing = true);
-  firmaCanvas.addEventListener('mouseup', () => {
-    isDrawing = false;
-    firmaInput.value = firmaCanvas.toDataURL();
+  firmaCanvas.addEventListener('mouseup', () => { isDrawing = false; saveSignature(); });
+  firmaCanvas.addEventListener('mousemove', e => draw(e));
+
+  // Gestione input touch
+  firmaCanvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    isDrawing = true;
   });
-  firmaCanvas.addEventListener('mousemove', e => {
+  firmaCanvas.addEventListener('touchend', e => {
+    e.preventDefault();
+    isDrawing = false;
+    saveSignature();
+  });
+  firmaCanvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    draw(touch);
+  });
+
+  function draw(e) {
     if (!isDrawing) return;
     const rect = firmaCanvas.getBoundingClientRect();
+    const x = (e.clientX || e.pageX) - rect.left;
+    const y = (e.clientY || e.pageY) - rect.top;
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.strokeStyle = '#000';
-    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.lineTo(x, y);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-  });
+    ctx.moveTo(x, y);
+  }
+
+  function saveSignature() {
+    firmaInput.value = firmaCanvas.toDataURL();
+    ctx.beginPath();
+  }
+
+  function clearCanvas() {
+    ctx.clearRect(0, 0, firmaCanvas.width, firmaCanvas.height);
+    firmaInput.value = '';
+  }
+
+  // Assicura di salvare la firma all'invio
+  document.getElementById('signForm').addEventListener('submit', saveSignature);
 </script>
 
 <%- include('partials/footer') %>
+
 
